@@ -6,8 +6,9 @@ Mappings:
       issuetype:
         name: 'Epic'
       summary: "{feature}"
+      customfield_10672: "{feature}"
       reporter:
-        name: "{reporter}"
+        name: "keiran.lovett@gameloft.com"
       components:
         - name: "Audio"
   Story:
@@ -39,6 +40,7 @@ Mappings:
         name: 'Task'
       summary: "{summary}"
       customfield_10671: "{parentKey}"
+      customfield_19581: "{parentKey}"
       reporter:
         name: "{reporter}"
       components:
