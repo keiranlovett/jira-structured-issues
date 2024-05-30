@@ -1,0 +1,134 @@
+# Template for basic Quest. This does not include the additional tasks of a Main Quest
+---
+Prompt: "Please enter the name of the Quest only."
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Epic
+      summary: "{feature}"
+      customfield_10672: "{feature}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Narrative
+  Story:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Story
+      summary: ""
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Narrative
+      customfield_10671: "{parentKey}"
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{parentKey}"
+  Task:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Task
+      summary: ""
+      customfield_19581: "{parentKey}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Narrative
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{issueRef[issueEpic]}"
+Structure:
+  - type: Epic
+    refId: issueEpic
+    summary: "{feature}"
+    items:
+      - type: Story
+        refId: issue1
+        summary: "[Q0][{feature}]"
+        customfield_19673:
+          value: "Q0"
+          issuelinks:
+            - type:
+                name: Relates
+              inwardIssue: "{issueRef[issueEpic]}"
+        items:
+          - type: Task
+            summary: "[Q0][{feature}] Quest Outline"
+          - type: Task
+            summary: "[Q0][{feature}] Prop 2D Concepts"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+      - type: Story
+        refId: issue2
+        summary: "[Q1][{feature}]"
+        customfield_19673:
+          value: "Q1"
+        items:
+          - type: Task
+            summary: "[Q1][{feature}] Quest Blueprint"
+          - type: Task
+            summary: "[Q1][{feature}] Dialogue Blueprint"
+          - type: Task
+            summary: "[Q1][{feature}] Quest Prop Models"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+      - type: Story
+        summary: "[Q2][{feature}]"
+        refId: issue3
+        customfield_19673:
+          value: "Q2"
+        items:
+          - type: Task
+            summary: "[Q2][{feature}] Quest Blueprint"
+          - type: Task
+            summary: "[Q2][{feature}] Dialogue Blueprint"
+          - type: Task
+            summary: "[Q2][{feature}] Unique Quest Systems"
+          - type: Task
+            summary: "[Q2][{feature}] Prop Models"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+          - type: Task
+            summary: "[Q2][{feature}] Audio"
+          - type: Task
+            summary: "[Q2][{feature}] VFX"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+          - type: Task
+            summary: "[Q2][{feature}] Opening Cut-Scene"
+          - type: Task
+            summary: "[Q2][{feature}] Quest Audio"
+          - type: Task
+            summary: "[Q2][{feature}] Quest VFX"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+          - type: Task
+            summary: "[{feature}] Test Plan"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[issueEpic]}"

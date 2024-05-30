@@ -1,0 +1,6 @@
+# Example config.yaml
+files:
+  - path: templates/quest-default-template.yaml
+    name: Quest (Default)
+  - path: templates/environment-art-location.yaml
+    name: Environment Art (Location)
