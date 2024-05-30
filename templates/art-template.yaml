@@ -1,21 +1,86 @@
-reporter: "keiran.lovett@gameloft.com"
-component: "Audio"
-epicSummary: "{Input}"
-stories:
-  - summary: "[Q0][{Input}]"
-    tasks:
-      - summary: "[Q0][{Input}] Research"
-      - summary: "[Q0][{Input}] Concept Art"
-      - summary: "[Q0][{Input}] Confluence"
-  - summary: "[Q1][{Input}]"
-    tasks:
-      - summary: "[Q1][{Input}] Whitebox"
-  - summary: "[Q2][{Input}]"
-    tasks:
-      - summary: "[Q2][{Input}] Structure"
-      - summary: "[Q2][{Input}] Level Art"
-      - summary: "[Q2][{Input}] Props"
-      - summary: "[Q2][{Input}] VFX"
-      - summary: "[Q2][{Input}] Lighting"
-  - summary: "[Q3][{Input}]"
-  - summary: "[Q4][{Input}]"
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: "STN"
+      issuetype:
+        name: 'Epic'
+      summary: "{feature}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: "Audio"
+  Story:
+    fields:
+      project:
+        key: "STN"
+      issuetype:
+        name: 'Story'
+      summary: "test"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: "{component}"
+      customfield_10671: "{parentKey}"
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: "Parent-Child"
+              inward: "is parent of"
+              outward: "is child of"
+            inwardIssue:
+              key: "{parentKey}"
+  Task:
+    fields:
+      project:
+        key: "STN"
+      issuetype:
+        name: 'Task'
+      summary: "{summary}"
+      customfield_10671: "{parentKey}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: "{component}"
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: "Parent-Child"
+              inward: "is parent of"
+              outward: "is child of"
+            inwardIssue:
+              key: "{parentKey}"
+
+Structure:
+  - type: "Epic"
+    summary: "{feature}"
+    items:
+      - type: "Story"
+        summary: "[Q0][{feature}]"
+        items:
+          - type: "Task"
+            summary: "[Q0][{feature}] Research"
+            components: 
+              - name: "Audio"
+            reporter:
+              name: "Keiran"
+          - type: "Task"
+            summary: "[Q0][{feature}] Concept Art"
+            reporter:
+              name: "{reporter}"
+          - type: "Task"
+            summary: "[Q0][{feature}] Confluence"
+      - type: "Task"
+        summary: "[Q0][{feature}] Direct Task"
+  - type: "Epic"
+    summary: "Another Epic Summary"
+    items:
+      - type: "Story"
+        summary: "[Q1][{feature}]"
+        items:
+          - type: "Task"
+            summary: "[Q1][{feature}] Whitebox"
+      - type: "Task"
+        summary: "[Q1][{feature}] Another Direct Task"
