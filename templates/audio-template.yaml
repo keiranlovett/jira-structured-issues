@@ -1,0 +1,21 @@
+reporter: "keiran.lovett@gameloft.com"
+component: "Audio"
+epicSummary: "{Input}"
+stories:
+  - summary: "[Q0][{Input}]"
+    tasks:
+      - summary: "[Q0][{Input}] Research"
+      - summary: "[Q0][{Input}] Concept Art"
+      - summary: "[Q0][{Input}] Confluence"
+  - summary: "[Q1][{Input}]"
+    tasks:
+      - summary: "[Q1][{Input}] Whitebox"
+  - summary: "[Q2][{Input}]"
+    tasks:
+      - summary: "[Q2][{Input}] Structure"
+      - summary: "[Q2][{Input}] Level Art"
+      - summary: "[Q2][{Input}] Props"
+      - summary: "[Q2][{Input}] VFX"
+      - summary: "[Q2][{Input}] Lighting"
+  - summary: "[Q3][{Input}]"
+  - summary: "[Q4][{Input}]"

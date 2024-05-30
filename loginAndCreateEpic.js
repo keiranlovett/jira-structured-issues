@@ -4,6 +4,7 @@ const yaml = require('js-yaml');
 const config = require('./config');
 const client = new Client();
 
+
 // Load issue template from YAML file
 const issueTemplate = yaml.load(fs.readFileSync('./issues-template.yaml', 'utf8'));
 
@@ -11,7 +12,7 @@ const issueTemplate = yaml.load(fs.readFileSync('./issues-template.yaml', 'utf8'
 const loginArgs = {
     data: {
         "username": "keiran.lovett@gameloft.com",
-        "password": ""
+        "password": "CullinanWest28!"
     },
     headers: {
         "Content-Type": "application/json"
@@ -19,7 +20,7 @@ const loginArgs = {
 };
 
 // Function to login and create Epic
-function loginAndCreateEpic(epicDetails, loginArgs) {
+function loginAndCreateEpic(epicDetails) {
 
     // Login and create Epic
     client.post(`${config.jiraUrl}/rest/auth/1/session`, loginArgs, function (data, response) {
@@ -83,8 +84,9 @@ function loginAndCreateEpic(epicDetails, loginArgs) {
                         project: { key: config.projectKey },
                         summary: storyName,
                         issuetype: { name: 'Story' },
-                        reporter: { name: issueTemplate.reporter },
-                        components: [{ name: issueTemplate.component }]
+                        customfield_10671: epic.key,
+                        reporter: { name: epicDetails.reporter },
+                        components: [{ name: epicDetails.component }]
                     }, 
                     update: {
                         issuelinks: [
@@ -119,10 +121,10 @@ function loginAndCreateEpic(epicDetails, loginArgs) {
                             const taskData = {
                                 fields: {
                                     project: { key: config.projectKey },
-                                    summary: taskName,
                                     issuetype: { name: 'Task' },
-                                    reporter: { name: issueTemplate.reporter },
-                                    components: [{ name: issueTemplate.component }],
+                                    summary: taskName,
+                                    reporter: { name: epicDetails.reporter },
+                                    components: [{ name: epicDetails.component }],
                                     customfield_19581: story.key,
                                 }, 
                                 update: {

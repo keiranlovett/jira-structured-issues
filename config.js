@@ -1,4 +1,4 @@
 module.exports = {
-    jiraUrl: 'https://jira.XXX.org',
-    projectKey: 'XXX'
+    jiraUrl: 'https://jira.gameloft.org',
+    projectKey: 'STN'
 };

@@ -1,0 +1,6 @@
+# Example config.yaml
+files:
+  - path: templates/art-template.yaml
+    name: Art
+  - path: templates/audio-template.yaml
+    name: Audio
