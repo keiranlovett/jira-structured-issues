@@ -74,13 +74,3 @@ Structure:
             summary: "[Q0][{feature}] Confluence"
       - type: "Task"
         summary: "[Q0][{feature}] Direct Task"
-  - type: "Epic"
-    summary: "Another Epic Summary"
-    items:
-      - type: "Story"
-        summary: "[Q1][{feature}]"
-        items:
-          - type: "Task"
-            summary: "[Q1][{feature}] Whitebox"
-      - type: "Task"
-        summary: "[Q1][{feature}] Another Direct Task"

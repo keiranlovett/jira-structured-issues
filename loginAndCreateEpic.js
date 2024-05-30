@@ -2,6 +2,8 @@ const Client = require('node-rest-client').Client;
 const fs = require('fs');
 const yaml = require('js-yaml');
 const config = require('./config');
+const prompts = require('prompts');
+
 const client = new Client();
 
 // Provide user credentials, which will be used to log in to JIRA.
@@ -106,8 +108,12 @@ async function promptForUniqueValues(mappings, structure) {
 
   const placeholderValues = {};
   for (const placeholder of uniquePlaceholders) {
-    const value = await prompt(`Enter value for placeholder '{${placeholder}}': `);
-    placeholderValues[placeholder] = value;
+    const response = await prompts({
+      type: 'text',
+      name: 'value',
+      message: `Enter value for placeholder '{${placeholder}}':`
+    });
+    placeholderValues[placeholder] = response.value;
   }
 
   return placeholderValues;
@@ -125,34 +131,40 @@ async function processIssues(items, parentKey = null, parentType = null, uniqueV
     }
 
     const issueData = {
-      fields: {},
+      fields: { ...mappingTemplate.fields }, // Start with fields from the mapping template
       update: {},
     };
 
-    // Process fields from the mapping template
-    for (const [fieldName, fieldValue] of Object.entries(mappingTemplate.fields)) {
-      let processedValue = fieldValue;
+    // Merge fields from structure, overriding values from mappings where applicable
+    for (const [fieldName, fieldValue] of Object.entries(item)) {
+      // Check if the field exists in the issueData (from mappings)
+      if (issueData.fields.hasOwnProperty(fieldName)) {
+        // Replace the value from mappings with the value from the structure
+        issueData.fields[fieldName] = fieldValue;
+      } 
+    }
 
-      // Replace placeholders in the value with actual data
-      processedValue = replacePlaceholders(fieldValue, { ...item, ...uniqueValues });
-
-      issueData.fields[fieldName] = processedValue;
+    // Replace placeholders in the values
+    for (const [field, value] of Object.entries(issueData.fields)) {
+      issueData.fields[field] = replacePlaceholders(value, { ...item, ...uniqueValues });
     }
 
     // Process fields within the 'update' object of the mapping template
     if (mappingTemplate.update) {
-      issueData.update = {};
       for (const [updateField, updateValue] of Object.entries(mappingTemplate.update)) {
         let processedUpdateValue = updateValue;
 
-        // Replace placeholders in the value with actual data
-        processedUpdateValue = replacePlaceholders(updateValue, { ...item, ...uniqueValues });
+        // Check if the field exists in the current item's structure
+        if (item.hasOwnProperty(updateField)) {
+          // Replace placeholders in the value with actual data
+          processedUpdateValue = replacePlaceholders(item[updateField], { ...item, ...uniqueValues });
+        }
 
         issueData.update[updateField] = processedUpdateValue;
       }
     }
 
-    // Replace reserved keys
+    // Replace reserved keys if necessary
     if (parentKey) {
       issueData.fields = replacePlaceholders(issueData.fields, { parentKey });
       issueData.update = replacePlaceholders(issueData.update, { parentKey });
@@ -171,6 +183,7 @@ async function processIssues(items, parentKey = null, parentType = null, uniqueV
   }
 }
 
+
 // Load issue template from YAML file
 const fileContents = fs.readFileSync('templates/art-template.yaml', 'utf8');
 const { Mappings: mappings, Structure: structure } = yaml.load(fileContents);
@@ -186,20 +199,7 @@ async function main() {
     .catch(error => console.error('Error processing issues:', error));
 }
 
-// Function to prompt the user for input
-async function prompt(question) {
-  const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
 
-  return new Promise(resolve => {
-    readline.question(question, answer => {
-      readline.close();
-      resolve(answer);
-    });
-  });
-}
 
 // Call the main function
 main();
