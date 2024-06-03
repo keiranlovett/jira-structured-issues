@@ -2,6 +2,9 @@ const prompts = require('prompts');
 
 // Function to capture user input for login
 function captureLogin() {
+
+    console.log('You need to login to Jira before further steps!');
+
     const questions = [
         {
             type: 'text',

@@ -18,16 +18,52 @@ function loginToJira(username, password) {
             }
         };
 
-        client.post(`${config.jiraUrl}/rest/auth/1/session`, loginArgs, (data, response) => {
+        client.post(`${jiraUrl}/rest/auth/1/session`, loginArgs, (data, response) => {
             if (response.statusCode === 200) {
-                console.log('Successfully logged in, session:', data.session);
-                resolve(data.session);
                 const session = data.session;
                 const sessionCookie = session.name + '=' + session.value;
-                // Save session cookie to file
                 saveSessionCookie(sessionCookie);
+                resolve(sessionCookie);
             } else {
-                reject(new Error('Failed to log in'));
+                reject(new Error('Invalid username or password.'));
+            }
+        });
+    });
+}
+
+// Function to validate the session cookie
+function validateJiraSession(sessionCookie) {
+    return new Promise((resolve) => {
+        const args = {
+            headers: {
+                cookie: sessionCookie
+            }
+        };
+
+        client.get(`${jiraUrl}/rest/api/latest/myself`, args, (data, response) => {
+            if (response.statusCode === 200) {
+                resolve(true);  // Session cookie is valid
+            } else {
+                resolve(false); // Session cookie is invalid
+            }
+        });
+    });
+}
+
+// Function to get Jira user information
+function getJiraUserInfo(sessionCookie) {
+    return new Promise((resolve, reject) => {
+        const args = {
+            headers: {
+                cookie: sessionCookie
+            }
+        };
+
+        client.get(`${jiraUrl}/rest/api/latest/myself`, args, (data, response) => {
+            if (response.statusCode === 200) {
+                resolve(data);  // Return user information
+            } else {
+                reject(new Error('Failed to retrieve user information. Session cookie might be invalid.'));
             }
         });
     });
@@ -75,10 +111,10 @@ function createIssueInJira(issueData, sessionCookie) {
     });
 }
 
-
-
 module.exports = {
     loginToJira,
+    validateJiraSession,
+    getJiraUserInfo,
     createIssueInJira,
     saveSessionCookie, 
     loadSessionCookie
