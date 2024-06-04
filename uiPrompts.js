@@ -8,12 +8,14 @@ async function captureLogin() {
         {
             type: 'text',
             name: 'username',
-            message: 'Jira Username?'
+            message: 'Jira Username?',
+            validate: username => username ? true : 'Username is required'
         },
         {
             type: 'password',
             name: 'password',
-            message: 'Jira Password?'
+            message: 'Jira Password?',
+            validate: password => password ? true : 'Password is required'
         }
     ];
 
@@ -21,15 +23,16 @@ async function captureLogin() {
 }
 
 // Function to prompt for unique values
-// Function to prompt for unique values
 async function promptForUniqueValues(uniquePlaceholders) {
     const placeholderValues = {};
 
     for (const placeholder of uniquePlaceholders) {
+        const placeholderDisplayName = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
         const response = await prompts({
             type: 'text',
             name: 'value',
-            message: `Enter value for placeholder '{${placeholder}}':`
+            message: `Enter value for placeholder: ${placeholderDisplayName}:`,
+            validate: value => value ? true : `Value for '${placeholderDisplayName}' is required`
         });
         placeholderValues[placeholder] = response.value;
     }

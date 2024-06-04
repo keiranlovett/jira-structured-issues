@@ -1,6 +1,5 @@
-# Template structure starts here
 ---
-Prompt: "Please enter the name of the Quest only."
+Prompt: "Please enter the name of the location only. Other details will be provided. Example 'Hawkins' will become 'Location - Hawkins':"
 Mappings:
   Epic:
     fields:
@@ -13,7 +12,7 @@ Mappings:
       reporter:
         name: "{reporter}"
       components:
-        - name: POD - Narrative
+        - name: POD - Environment Art
   Story:
     fields:
       project:
@@ -24,7 +23,7 @@ Mappings:
       reporter:
         name: "{reporter}"
       components:
-        - name: POD - Narrative
+        - name: POD - Environment Art
       customfield_10671: "{parentKey}"
     update:
       issuelinks:
@@ -46,7 +45,7 @@ Mappings:
       reporter:
         name: "{reporter}"
       components:
-        - name: POD - Narrative
+        - name: POD - Environment Art
     update:
       issuelinks:
         - add:
@@ -66,9 +65,17 @@ Structure:
           value: "Q0"
         items:
           - type: Task
-            summary: "[Q0][{feature}] Quest Outline"
+            summary: "[Q0][{feature}] Research"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
           - type: Task
-            summary: "[Q0][{feature}] Prop 2D Concepts"
+            summary: "[Q0][{feature}] Concept Art"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+          - type: Task
+            summary: "[Q0][{feature}] Props List"
             components:
               - name: POD - Narrative
               - name: POD - Environment Art
@@ -78,43 +85,19 @@ Structure:
           value: "Q1"
         items:
           - type: Task
-            summary: "[Q1][{feature}] Quest Blueprint"
-          - type: Task
-            summary: "[Q1][{feature}] Dialogue Blueprint"
-          - type: Task
-            summary: "[Q1][{feature}] Quest Prop Models"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
+            summary: "[Q1][{feature}] Whitebox"
       - type: Story
         summary: "[Q2][{feature}]"
         customfield_19673:
           value: "Q2"
         items:
           - type: Task
-            summary: "[Q2][{feature}] Quest Blueprint"
+            summary: "[Q2][{feature}] Structure"
           - type: Task
-            summary: "[Q2][{feature}] Dialogue Blueprint"
+            summary: "[Q2][{feature}] Props"
           - type: Task
-            summary: "[Q2][{feature}] Unique Quest Systems"
-          - type: Task
-            summary: "[Q2][{feature}] Prop Models"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
-          - type: Task
-            summary: "[Q2][{feature}] Audio"
+            summary: "[Q2][{feature}] Level Art"
           - type: Task
             summary: "[Q2][{feature}] VFX"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
           - type: Task
-            summary: "[Q2][{feature}] Opening Cut-Scene"
-          - type: Task
-            summary: "[Q2][{feature}] Quest Audio"
-          - type: Task
-            summary: "[Q2][{feature}] Quest VFX"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
+            summary: "[Q2][{feature}] Lighting"

@@ -2,5 +2,5 @@
 files:
   - path: templates/quest-default-template.yaml
     name: Quest (Default)
-  - path: templates/audio-template.yaml
-    name: Audio
+  - path: templates/environment-art-location.yaml
+    name: Environment Art (Location)
