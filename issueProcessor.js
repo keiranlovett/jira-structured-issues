@@ -1,17 +1,18 @@
-const prompts = require('prompts');
 const { createIssueInJira } = require('./jiraApi');
 const { replacePlaceholders } = require('./utils');
-
-// Define reserved keys
 const reservedKeys = ['parentKey', 'epicKey'];
 
-async function promptForUniqueValues(mappings, structure) {
+function extractUniquePlaceholders(mappings, structure) {
     const uniquePlaceholders = new Set();
 
-    function findUniquePlaceholders(item) {
+    function findUniquePlaceholders(item, key = null) {
+        if (reservedKeys.includes(key)) {
+            return; // Skip reserved keys
+        }
+
         if (typeof item === 'object') {
-            for (const value of Object.values(item)) {
-                findUniquePlaceholders(value);
+            for (const [k, value] of Object.entries(item)) {
+                findUniquePlaceholders(value, k);
             }
         } else if (typeof item === 'string') {
             const regex = /{([^{}]+)}/g;
@@ -23,29 +24,19 @@ async function promptForUniqueValues(mappings, structure) {
     }
 
     for (const mapping of Object.values(mappings)) {
-        for (const fieldValue of Object.values(mapping.fields)) {
-            findUniquePlaceholders(fieldValue);
+        for (const [key, fieldValue] of Object.entries(mapping.fields)) {
+            findUniquePlaceholders(fieldValue, key);
         }
         if (mapping.update) {
-            for (const updateValue of Object.values(mapping.update)) {
-                findUniquePlaceholders(updateValue);
+            for (const [key, updateValue] of Object.entries(mapping.update)) {
+                findUniquePlaceholders(updateValue, key);
             }
         }
     }
 
-    structure.forEach(findUniquePlaceholders);
+    structure.forEach(item => findUniquePlaceholders(item));
 
-    const placeholderValues = {};
-    for (const placeholder of uniquePlaceholders) {
-        const response = await prompts({
-            type: 'text',
-            name: 'value',
-            message: `Enter value for placeholder '{${placeholder}}':`
-        });
-        placeholderValues[placeholder] = response.value;
-    }
-
-    return placeholderValues;
+    return uniquePlaceholders;
 }
 
 async function processIssues(mappings, structure, sessionCookie, uniqueValues = {}, parentKey = null) {
@@ -101,7 +92,4 @@ async function processIssues(mappings, structure, sessionCookie, uniqueValues = 
     }
 }
 
-module.exports = {
-    promptForUniqueValues,
-    processIssues
-};
+module.exports = { extractUniquePlaceholders, processIssues };

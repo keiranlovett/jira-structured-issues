@@ -1,8 +1,9 @@
 const { loginToJira, validateJiraSession, loadSessionCookie, getJiraUserInfo } = require('./jiraApi');
-const { displayFileList } = require('./templates');
-const { captureLogin } = require('./uiLogin');
-const { processIssues, promptForUniqueValues } = require('./issueProcessor');
+const { displayFileList, captureLogin, promptForUniqueValues } = require('./uiPrompts');
+const { processIssues, extractUniquePlaceholders } = require('./issueProcessor');
+const { GetTemplates } = require('./templates');
 const readline = require('readline');
+const config = require('./config');
 
 // Function to listen for ESC key press
 function setupEscListener() {
@@ -44,7 +45,7 @@ async function obtainValidSession() {
 async function main() {
     setupEscListener();  // Set up the ESC key listener
 
-    console.log('Welcome!');
+    console.log('Welcome! Connecting to: ' + config.JIRA_URL);
 
     try {
         const sessionCookie = await obtainValidSession();
@@ -58,26 +59,24 @@ async function main() {
             return; // Exit if unable to retrieve user info
         }
 
-        // Display file list and process selected file
-        displayFileList(async selectedFile => {
-            try {
-                console.log('Selected template:', selectedFile.name);
+        // Get templates and display file list
+        const templates = GetTemplates();
+        const selectedFile = await displayFileList(templates);
 
-                if (!selectedFile || !selectedFile.data) {
-                    throw new Error('Invalid file format: Data object is missing.');
-                }
+        console.log('Selected template:', selectedFile.name);
 
-                const { Mappings: mappings, Structure: structure } = selectedFile.data;
+        if (!selectedFile || !selectedFile.data) {
+            throw new Error('Invalid file format: Data object is missing.');
+        }
 
-                const uniqueValues = await promptForUniqueValues(mappings, structure);
+        const { Mappings: mappings, Structure: structure } = selectedFile.data;
 
-                await processIssues(mappings, structure, sessionCookie, uniqueValues);
+        const uniquePlaceholders = extractUniquePlaceholders(mappings, structure);
+        const uniqueValues = await promptForUniqueValues(uniquePlaceholders);
 
-                console.log('Issues created successfully');
-            } catch (error) {
-                console.error('Error processing file:', error.message);
-            }
-        });
+        await processIssues(mappings, structure, sessionCookie, uniqueValues);
+
+        console.log('Issues created successfully');
 
     } catch (error) {
         console.error('Error:', error.message);

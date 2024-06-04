@@ -1,4 +1,3 @@
-const { jiraUrl } = require('./config');
 const Client = require('node-rest-client').Client;
 const fs = require('fs');
 const config = require('./config');
@@ -18,7 +17,7 @@ function loginToJira(username, password) {
             }
         };
 
-        client.post(`${jiraUrl}/rest/auth/1/session`, loginArgs, (data, response) => {
+        client.post(`${config.JIRA_URL}/rest/auth/1/session`, loginArgs, (data, response) => {
             if (response.statusCode === 200) {
                 const session = data.session;
                 const sessionCookie = session.name + '=' + session.value;
@@ -40,7 +39,7 @@ function validateJiraSession(sessionCookie) {
             }
         };
 
-        client.get(`${jiraUrl}/rest/api/latest/myself`, args, (data, response) => {
+        client.get(`${config.JIRA_URL}/rest/api/latest/myself`, args, (data, response) => {
             if (response.statusCode === 200) {
                 resolve(true);  // Session cookie is valid
             } else {
@@ -59,7 +58,7 @@ function getJiraUserInfo(sessionCookie) {
             }
         };
 
-        client.get(`${jiraUrl}/rest/api/latest/myself`, args, (data, response) => {
+        client.get(`${config.JIRA_URL}/rest/api/latest/myself`, args, (data, response) => {
             if (response.statusCode === 200) {
                 resolve(data);  // Return user information
             } else {
@@ -98,7 +97,7 @@ function createIssueInJira(issueData, sessionCookie) {
     console.log(issueData);
 
     return new Promise((resolve, reject) => {
-        client.post(`${jiraUrl}/rest/api/latest/issue`, createIssueArgs, (data, response) => {
+        client.post(`${config.JIRA_URL}/rest/api/latest/issue`, createIssueArgs, (data, response) => {
             if (response.statusCode === 201) {
                 console.log('Issue created:', data.key);
                 resolve(data);

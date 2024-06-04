@@ -1,6 +1,6 @@
 # Example config.yaml
 files:
-  - path: templates/art-template.yaml
-    name: Art
+  - path: templates/quest-default-template.yaml
+    name: Quest (Default)
   - path: templates/audio-template.yaml
     name: Audio

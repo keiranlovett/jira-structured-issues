@@ -3,23 +3,6 @@ const yaml = require('js-yaml');
 const prompts = require('prompts');
 
 
-async function displayFileList(callback) {
-    const templates = GetTemplates();
-
-    const choices = templates.map(template => {
-        return { title: template.name, value: template };
-    });
-
-    const response = await prompts({
-        type: 'select',
-        name: 'file',
-        message: 'Select a template:',
-        choices: choices
-    });
-
-    callback(response.file); // Invoke the callback with the selected file
-}
-
 // Function to load YAML files
 function loadYAMLFile(filePath) {
     try {
@@ -54,4 +37,4 @@ function GetTemplates() {
     }
 }
 
-module.exports = { displayFileList };
+module.exports = { GetTemplates };
