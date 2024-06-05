@@ -4,7 +4,7 @@ const readline = require('readline');
 // Custom modules
 const { loginToJira, validateJiraSession, loadSessionCookie, getJiraUserInfo, retrieveChildren, getIssueDetails } = require('./jiraApi');
 const { displayFileList, captureLogin, promptForUniqueValues } = require('./uiPrompts');
-const { processIssues, extractUniquePlaceholders } = require('./issueProcessor');
+const { processIssuesRecursive, extractUniquePlaceholders } = require('./issueProcessor');
 const { GetTemplates } = require('./templates');
 const config = require('./config');
 
@@ -73,7 +73,7 @@ async function displayAndProcessTemplates(sessionCookie) {
     const uniqueValues = await promptForUniqueValues(uniquePlaceholders);
 
     // Process issues based on the selected template, passing issueKeysByRefId
-    await processIssues(mappings, structure, sessionCookie, issueKeysByRefId, uniqueValues);
+    await processIssuesRecursive(mappings, structure, sessionCookie, issueKeysByRefId, uniqueValues);
     console.log('Issues created successfully');
 }
 

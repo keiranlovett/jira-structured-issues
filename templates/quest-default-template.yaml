@@ -1,4 +1,4 @@
-# Template structure starts here
+# Template for basic Quest. This does not include the additional tasks of a Main Quest
 ---
 Prompt: "Please enter the name of the Quest only."
 Mappings:
@@ -32,7 +32,6 @@ Mappings:
             type:
               name: Parent-Child
               inward: is parent of
-              outward: is child of
             inwardIssue:
               key: "{parentKey}"
   Task:
@@ -53,7 +52,6 @@ Mappings:
             type:
               name: Parent-Child
               inward: is parent of
-              outward: is child of
             inwardIssue:
               key: "{issueRef[issueEpic]}"
 Structure:
@@ -62,9 +60,14 @@ Structure:
     summary: "{feature}"
     items:
       - type: Story
+        refId: issue1
         summary: "[Q0][{feature}]"
         customfield_19673:
           value: "Q0"
+          issuelinks:
+            - type:
+                name: Relates
+              inwardIssue: "{issueRef[issueEpic]}"
         items:
           - type: Task
             summary: "[Q0][{feature}] Quest Outline"
@@ -74,6 +77,7 @@ Structure:
               - name: POD - Narrative
               - name: POD - Environment Art
       - type: Story
+        refId: issue2
         summary: "[Q1][{feature}]"
         customfield_19673:
           value: "Q1"
@@ -89,6 +93,7 @@ Structure:
               - name: POD - Environment Art
       - type: Story
         summary: "[Q2][{feature}]"
+        refId: issue3
         customfield_19673:
           value: "Q2"
         items:
@@ -119,3 +124,11 @@ Structure:
             components:
               - name: POD - Narrative
               - name: POD - Environment Art
+          - type: Task
+            summary: "[{feature}] Test Plan"
+            components:
+              - name: POD - Narrative
+              - name: POD - Environment Art
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[issueEpic]}"

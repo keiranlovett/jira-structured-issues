@@ -44,6 +44,7 @@ function extractUniquePlaceholders(mappings, structure) {
     return uniquePlaceholders;
 }
 
+
 // Function to replace placeholders related to issue references
 function replaceIssueRefPlaceholder(value, issueKeysByRefId) {
     if (typeof value === 'object') {
@@ -97,85 +98,105 @@ function replacePlaceholders(value, data) {
     });
 }
 
-// Function to process issues recursively
-async function processIssues(mappings, structure, sessionCookie, issueKeysByRefId, uniqueValues = {}, parentKey = null) {
-    for (const item of structure) {
-        const mappingTemplate = mappings[item.type];
+// Function to process fields from mapping template
+function processFields(mappingTemplate, item, uniqueValues) {
+    const processedFields = {};
+    for (const [fieldName, fieldValue] of Object.entries(mappingTemplate.fields)) {
+        let processedValue = fieldValue;
+        if (item.hasOwnProperty(fieldName)) {
+            processedValue = replacePlaceholders(item[fieldName], { ...item, ...uniqueValues });
+        } else {
+            processedValue = replacePlaceholders(fieldValue, { ...item, ...uniqueValues });
+        }
+        processedFields[fieldName] = processedValue;
+    }
+    return processedFields;
+}
 
+// Function to process update section of issueData
+function processUpdate(mappingTemplate, item, uniqueValues) {
+    const processedUpdate = { issuelinks: [] };
+    if (mappingTemplate.update) {
+        for (const [updateField, updateValue] of Object.entries(mappingTemplate.update)) {
+            let processedUpdateValue = updateValue;
+            if (item.hasOwnProperty(updateField)) {
+                processedUpdateValue = replacePlaceholders(item[updateField], { ...item, ...uniqueValues });
+            } else {
+                processedUpdateValue = replacePlaceholders(updateValue, { ...item, ...uniqueValues });
+            }
+            processedUpdate[updateField] = processedUpdateValue;
+        }
+    }
+    return processedUpdate;
+}
+
+// Function to process issueData for a single item
+function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId) {
+    const issueData = {
+        fields: processFields(mappingTemplate, item, uniqueValues),
+        update: processUpdate(mappingTemplate, item, uniqueValues)
+    };
+
+    // Replace parentKey placeholders if parentKey is provided
+    if (parentKey) {
+        issueData.fields = replacePlaceholders(issueData.fields, { parentKey });
+        issueData.update = replacePlaceholders(issueData.update, { parentKey });
+    }
+
+    // Replace placeholders related to issue references
+    issueData.fields = replaceIssueRefPlaceholder(issueData.fields, issueKeysByRefId);
+    issueData.update = replaceIssueRefPlaceholder(issueData.update, issueKeysByRefId);
+
+    return issueData;
+}
+
+// Function to process issuelinks for a single item
+function processIssueLinks(item, issueKeysByRefId) {
+    const issueLinks = [];
+    if (item.issuelinks) {
+        const linkType = item.issuelinks.type;
+        const inwardIssue = replaceIssueRefPlaceholder(item.issuelinks.inwardIssue, issueKeysByRefId); // Replace placeholder with actual issue key
+        issueLinks.push({
+            add: {
+                type: { name: linkType },
+                inwardIssue: { key: inwardIssue }
+            }
+        });
+    }
+    return issueLinks;
+}
+
+// Recursive function to process issues
+async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysByRefId, uniqueValues = {}, parentKey = null) {
+    for (const item of items) {
+        const mappingTemplate = mappings[item.type];
         if (!mappingTemplate) {
             console.error(`Error processing issues: Mapping template for type '${item.type}' not found`);
             continue;
         }
 
-        const issueData = {
-            fields: {},
-            update: {
-                issuelinks: []
-            }
-        };
-
-        // Populate issueData with fields from mappingTemplate
-        for (const [fieldName, fieldValue] of Object.entries(mappingTemplate.fields)) {
-            let processedValue = fieldValue;
-            if (item.hasOwnProperty(fieldName)) {
-                processedValue = replacePlaceholders(item[fieldName], { ...item, ...uniqueValues });
-            } else {
-                processedValue = replacePlaceholders(fieldValue, { ...item, ...uniqueValues });
-            }
-            issueData.fields[fieldName] = processedValue;
+        const issueData = processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId);
+        const issueLinks = processIssueLinks(item, issueKeysByRefId);
+        
+        if (!Array.isArray(issueData.update.issuelinks)) {
+            issueData.update.issuelinks = []; // Initialize issuelinks as an empty array
         }
-
-        // Populate update section of issueData if mappingTemplate has an update section
-        if (mappingTemplate.update) {
-            for (const [updateField, updateValue] of Object.entries(mappingTemplate.update)) {
-                let processedUpdateValue = updateValue;
-                if (item.hasOwnProperty(updateField)) {
-                    processedUpdateValue = replacePlaceholders(item[updateField], { ...item, ...uniqueValues });
-                } else {
-                    processedUpdateValue = replacePlaceholders(updateValue, { ...item, ...uniqueValues });
-                }
-                issueData.update[updateField] = processedUpdateValue;
-            }
-        }
-
-        // Replace parentKey placeholders if parentKey is provided
-        if (parentKey) {
-            issueData.fields = replacePlaceholders(issueData.fields, { parentKey });
-            issueData.update = replacePlaceholders(issueData.update, { parentKey });
-        }
-
-        // Replace placeholders related to issue references
-        issueData.fields = replaceIssueRefPlaceholder(issueData.fields, issueKeysByRefId);
-        issueData.update = replaceIssueRefPlaceholder(issueData.update, issueKeysByRefId);
-
-        // Handle issuelinks directly in the structure
-        if (item.issuelinks) {
-            const linkType = item.issuelinks.type;
-            const inwardIssue = replaceIssueRefPlaceholder(item.issuelinks.inwardIssue, issueKeysByRefId); // Replace placeholder with actual issue key
-            issueData.update.issuelinks.push({
-                add: {
-                    type: { name: linkType },
-                    inwardIssue: { key: inwardIssue }
-                }
-            });
-        }
+        
+        issueData.update.issuelinks.push(...issueLinks);
 
         console.log("Processed issue data:", JSON.stringify(issueData, null, 2));
 
-        // Create issue in Jira using the processed issueData
         const issue = await createIssueInJira(issueData, sessionCookie);
 
-        // Store issue key if refId is provided in the item
         if (item.refId) {
             issueKeysByRefId.set(item.refId, issue.key);
         }
 
-        // Recursively process nested items if present
         if (item.items && item.items.length > 0) {
             const newUniqueValues = { ...uniqueValues, parentKey: issue.key };
-            await processIssues(mappings, item.items, sessionCookie, issueKeysByRefId, newUniqueValues, issue.key);
+            await processIssuesRecursive(mappings, item.items, sessionCookie, issueKeysByRefId, newUniqueValues, issue.key);
         }
     }
 }
 
-module.exports = { extractUniquePlaceholders, processIssues };
+module.exports = { extractUniquePlaceholders, processIssuesRecursive };
