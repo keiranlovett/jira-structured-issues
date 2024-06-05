@@ -1,7 +1,10 @@
 const { createIssueInJira } = require('./jiraApi');
+const config = require('./config');
 
 // Define reserved keys and create a Map for issue references
 const reservedKeys = ['parentKey', 'issueRef'];
+const refIssueRegex = /{issueRef\[(.+?)\]}/g;
+const placeholderRegex = /{([^{}]+)}/g;
 
 // Function to extract unique placeholders from mappings and structure
 function extractUniquePlaceholders(mappings, structure) {
@@ -17,9 +20,8 @@ function extractUniquePlaceholders(mappings, structure) {
                 findUniquePlaceholders(value, k);
             }
         } else if (typeof item === 'string') {
-            const regex = /{([^{}]+)}/g;
             let match;
-            while ((match = regex.exec(item)) !== null) {
+            while ((match = placeholderRegex.exec(item)) !== null) {
                 const placeholder = match[1];
                 if (!reservedKeys.some(reserved => placeholder.startsWith(reserved))) {
                     uniquePlaceholders.add(placeholder);
@@ -63,8 +65,7 @@ function replaceIssueRefPlaceholder(value, issueKeysByRefId) {
         value = String(value);
     }
 
-    const regex = /{issueRef\[(.+?)\]}/g;
-    return value.replace(regex, (match, refId) => {
+    return value.replace(refIssueRegex, (match, refId) => {
         const issueKey = issueKeysByRefId.get(refId);
         return issueKey || match;
     });
@@ -88,8 +89,7 @@ function replacePlaceholders(value, data) {
         value = String(value);
     }
 
-    const regex = /{([^{}]+)}/g;
-    return value.replace(regex, (match, placeholder) => {
+    return value.replace(placeholderRegex, (match, placeholder) => {
         if (data.hasOwnProperty(placeholder)) {
             return data[placeholder];
         } else {
@@ -184,7 +184,7 @@ async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysB
         
         issueData.update.issuelinks.push(...issueLinks);
 
-        console.log("Processed issue data:", JSON.stringify(issueData, null, 2));
+        config.debug("Processed issue data:", JSON.stringify(issueData, null, 2));
 
         const issue = await createIssueInJira(issueData, sessionCookie);
 

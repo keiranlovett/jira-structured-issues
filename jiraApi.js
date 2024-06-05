@@ -96,12 +96,12 @@ function createIssueInJira(issueData) {
         data: issueData
     };
 
-    console.log(issueData);
+    config.debug(issueData);
 
     return new Promise((resolve, reject) => {
         client.post(`${config.JIRA_URL}/rest/api/latest/issue`, createIssueArgs, (data, response) => {
             if (response.statusCode === 201) {
-                console.log('Issue created:', data.key);
+                config.debug('Issue created:', data.key);
                 resolve(data);
             } else {
                 console.error('Failed to create issue:', response.statusCode, response.statusMessage);
