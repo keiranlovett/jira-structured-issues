@@ -65,14 +65,19 @@ async function displayAndProcessTemplates(sessionCookie) {
 
     console.log(prompt);
 
+    // Initialize issueKeysByRefId within the function
+    const issueKeysByRefId = new Map();
+
     // Prompt the user for unique values
     const uniquePlaceholders = extractUniquePlaceholders(mappings, structure);
     const uniqueValues = await promptForUniqueValues(uniquePlaceholders);
 
-    // Process issues based on the selected template
-    await processIssues(mappings, structure, sessionCookie, uniqueValues);
+    // Process issues based on the selected template, passing issueKeysByRefId
+    await processIssues(mappings, structure, sessionCookie, issueKeysByRefId, uniqueValues);
     console.log('Issues created successfully');
 }
+
+
 
 
 

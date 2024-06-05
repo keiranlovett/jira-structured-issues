@@ -55,9 +55,10 @@ Mappings:
               inward: is parent of
               outward: is child of
             inwardIssue:
-              key: "{parentKey}"
+              key: "{issueRef[issueEpic]}"
 Structure:
   - type: Epic
+    refId: issueEpic
     summary: "{feature}"
     items:
       - type: Story
