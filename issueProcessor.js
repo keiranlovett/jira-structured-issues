@@ -109,7 +109,9 @@ async function processIssues(mappings, structure, sessionCookie, issueKeysByRefI
 
         const issueData = {
             fields: {},
-            update: {}
+            update: {
+                issuelinks: []
+            }
         };
 
         // Populate issueData with fields from mappingTemplate
@@ -145,6 +147,18 @@ async function processIssues(mappings, structure, sessionCookie, issueKeysByRefI
         // Replace placeholders related to issue references
         issueData.fields = replaceIssueRefPlaceholder(issueData.fields, issueKeysByRefId);
         issueData.update = replaceIssueRefPlaceholder(issueData.update, issueKeysByRefId);
+
+        // Handle issuelinks directly in the structure
+        if (item.issuelinks) {
+            const linkType = item.issuelinks.type;
+            const inwardIssue = replaceIssueRefPlaceholder(item.issuelinks.inwardIssue, issueKeysByRefId); // Replace placeholder with actual issue key
+            issueData.update.issuelinks.push({
+                add: {
+                    type: { name: linkType },
+                    inwardIssue: { key: inwardIssue }
+                }
+            });
+        }
 
         console.log("Processed issue data:", JSON.stringify(issueData, null, 2));
 
