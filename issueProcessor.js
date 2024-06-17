@@ -1,3 +1,6 @@
+const ProgressBar = require('progress');
+const { inspect } = require('util');
+
 const { createIssueInJira } = require('./jiraApi');
 const config = require('./config');
 
@@ -5,6 +8,7 @@ const config = require('./config');
 const reservedKeys = ['parentKey', 'issueRef'];
 const refIssueRegex = /{issueRef\[(.+?)\]}/g;
 const placeholderRegex = /{([^{}]+)}/g;
+
 
 // Function to extract unique placeholders from mappings and structure
 function extractUniquePlaceholders(mappings, structure) {
@@ -98,6 +102,24 @@ function replacePlaceholders(value, data) {
     });
 }
 
+// Function to merge a complex value into an object at a specified path
+function mergeValueIntoObject(obj, path, complexValue) {
+    const keys = path.split('.');
+    let current = obj;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+            current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+    }
+
+    const lastKey = keys[keys.length - 1];
+    current[lastKey] = complexValue;
+
+    return obj; // Return the modified object
+}
+
 // Function to process fields from mapping template
 function processFields(mappingTemplate, item, uniqueValues) {
     const processedFields = {};
@@ -143,6 +165,28 @@ function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueK
         issueData.update = replacePlaceholders(issueData.update, { parentKey });
     }
 
+
+// Merge the complex description value into the fields object at the specified path
+// Only needed for v3 API
+/*issueData.fields = mergeValueIntoObject(issueData.fields, 'description', {
+    "type": "doc",
+    "version": 1,
+    "content": [
+        {
+            "type": "paragraph",
+            "content": [
+                {
+                    "type": "text",
+                    "text": issueData.fields.description
+                }
+            ]
+        }
+    ]
+});*/
+
+// Debug log to verify the updated fields object
+console.log("Processed fields:", JSON.stringify(issueData, null, 4));
+
     // Replace placeholders related to issue references
     issueData.fields = replaceIssueRefPlaceholder(issueData.fields, issueKeysByRefId);
     issueData.update = replaceIssueRefPlaceholder(issueData.update, issueKeysByRefId);
@@ -166,8 +210,14 @@ function processIssueLinks(item, issueKeysByRefId) {
     return issueLinks;
 }
 
+
 // Recursive function to process issues
 async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysByRefId, uniqueValues = {}, parentKey = null) {
+
+    // Initialize the progress bar
+    //console.log(`Creating '${item.type}'`);
+    const bar = new ProgressBar(':bar :current/:total', { total: items.length });
+
     for (const item of items) {
         const mappingTemplate = mappings[item.type];
         if (!mappingTemplate) {
@@ -184,9 +234,12 @@ async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysB
         
         issueData.update.issuelinks.push(...issueLinks);
 
-        config.debug("Processed issue data:", JSON.stringify(issueData, null, 2));
+        const inspectedString = inspect(issueData, { depth: null, colors: true });
+        config.debug("Processed issue data:", inspectedString);
 
         const issue = await createIssueInJira(issueData, sessionCookie);
+
+        bar.tick(); // Update the progress bar after each successful request
 
         if (item.refId) {
             issueKeysByRefId.set(item.refId, issue.key);

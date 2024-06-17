@@ -13,6 +13,7 @@
     "axios": "^1.7.2",
     "js-yaml": "^4.1.0",
     "node-rest-client": "^3.1.1",
+    "progress": "^2.0.3",
     "prompts": "^2.4.2"
   }
 }

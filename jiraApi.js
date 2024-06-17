@@ -106,7 +106,7 @@ function createIssueInJira(issueData) {
             } else {
                 console.error('Failed to create issue:', response.statusCode, response.statusMessage);
                 console.error('Response body:', data);
-                reject(`Failed to create issue: ${response.statusCode} ${response.statusMessage}`);
+                reject(`Failed to create issue: ${response.statusCode} ${response.statusMessage}. JSON Body: ${issueData}`);
             }
         });
     });
@@ -206,8 +206,6 @@ async function retrieveChildren(issueKey) {
 
     return linkedIssues;
 }
-
-
 
 module.exports = {
     loginToJira,
