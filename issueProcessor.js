@@ -1,15 +1,16 @@
 const ProgressBar = require('progress');
-const { inspect } = require('util');
+const jmespath = require('jmespath');
 
+const { inspect } = require('util');
 const { createIssueInJira } = require('./jiraApi');
 const { promptExistingKey, promptForSkipChoice } = require('./uiPrompts');
 const config = require('./config');
 
 // Define reserved keys and create a Map for issue references
-const reservedKeys = ['parentKey', 'issueRef'];
+const reservedKeys = ['parentKey', 'issueRef', 'query'];
 const refIssueRegex = /{issueRef\[(.+?)\]}/g;
 const placeholderRegex = /{([^{}]+)}/g;
-
+const jmespathPlaceholderRegex = /{query\['(.+?)'\]}/g; // Regex to match JMESPath placeholders
 
 // Function to extract unique placeholders from mappings and structure
 function extractUniquePlaceholders(mappings, structure) {
@@ -52,6 +53,31 @@ function extractUniquePlaceholders(mappings, structure) {
 }
 
 
+// Function to replace JMESPath placeholders in strings or objects
+function replaceJmesPathPlaceholders(value, original) {
+
+    if (typeof value === 'object') {
+        if (Array.isArray(value)) {
+            return value.map(item => replaceJmesPathPlaceholders(item, original));
+        } else {
+            const replacedObject = {};
+            for (const [key, val] of Object.entries(value)) {
+                replacedObject[key] = replaceJmesPathPlaceholders(val, original);
+            }
+            return replacedObject;
+        }
+    }
+
+    if (typeof value !== 'string') {
+        value = String(value);
+    }
+
+    return value.replace(jmespathPlaceholderRegex, (match, expression) => {
+        const result = jmespath.search(original, expression);
+        return result !== undefined ? result : match;
+    });
+}
+
 // Function to replace placeholders related to issue references
 function replaceIssueRefPlaceholder(value, issueKeysByRefId) {
     if (typeof value === 'object') {
@@ -75,6 +101,7 @@ function replaceIssueRefPlaceholder(value, issueKeysByRefId) {
         return issueKey || match;
     });
 }
+
 
 // Function to replace placeholders in a string or object with actual data
 function replacePlaceholders(value, data) {
@@ -101,24 +128,6 @@ function replacePlaceholders(value, data) {
             return match;
         }
     });
-}
-
-// Function to merge a complex value into an object at a specified path
-function mergeValueIntoObject(obj, path, complexValue) {
-    const keys = path.split('.');
-    let current = obj;
-
-    for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) {
-            current[keys[i]] = {};
-        }
-        current = current[keys[i]];
-    }
-
-    const lastKey = keys[keys.length - 1];
-    current[lastKey] = complexValue;
-
-    return obj; // Return the modified object
 }
 
 // Function to process fields from mapping template
@@ -156,6 +165,10 @@ function processUpdate(mappingTemplate, item, uniqueValues) {
 // Function to process issueData for a single item
 function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId) {
 
+    mappingTemplate = replaceJmesPathPlaceholders(mappingTemplate)
+
+    console.log("templates" + mappingTemplate);
+
     const issueData = {
         fields: processFields(mappingTemplate, item, uniqueValues),
         update: processUpdate(mappingTemplate, item, uniqueValues)
@@ -166,25 +179,6 @@ function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueK
         issueData.fields = replacePlaceholders(issueData.fields, { parentKey });
         issueData.update = replacePlaceholders(issueData.update, { parentKey });
     }
-
-
-    // Merge the complex description value into the fields object at the specified path
-    // Only needed for v3 API
-    /*issueData.fields = mergeValueIntoObject(issueData.fields, 'description', {
-        "type": "doc",
-        "version": 1,
-        "content": [
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": issueData.fields.description
-                    }
-                ]
-            }
-        ]
-    });*/
 
     // Debug log to verify the updated fields object
     console.log("Processed fields:", JSON.stringify(issueData, null, 4));
@@ -234,9 +228,7 @@ async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysB
             continue;
         }
 
-        const updatedTemplate = await processTemplate(mappingTemplate);
-
-        const issueData = processIssueData(updatedTemplate, item, uniqueValues, parentKey, issueKeysByRefId);
+        const issueData = processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId);
         const issueLinks = processIssueLinks(item, issueKeysByRefId);
         
         if (!Array.isArray(issueData.update.issuelinks)) {
@@ -296,4 +288,4 @@ async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysB
     }
 }
 
-module.exports = { extractUniquePlaceholders, processIssuesRecursive };
+module.exports = { extractUniquePlaceholders, processIssuesRecursive, replaceJmesPathPlaceholders };

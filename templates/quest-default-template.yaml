@@ -8,8 +8,8 @@ Mappings:
         key: STN
       issuetype:
         name: Epic
-      summary: "{quest_type}_{quest_name_shorthand}"
-      customfield_10672: "{quest_type} - {quest_name}"
+      summary: ""
+      customfield_10672: "{quest_type:Location, Side, Main} Quest - {shorthand_name}"
       reporter:
         name: "{reporter}"
       components:
@@ -69,11 +69,11 @@ Structure:
   - type: Epic
     refId: issueEpic
     step: "prompt"
-    summary: "{quest_type:Location, Side, Main}_{quest_name_shorthand}"
+    summary: "{quest_type:Location, Side, Main} Quest - {quest_name}"
     items:
       - type: Story
         refId: issue1
-        summary: "[Q0]{quest_type}_{quest_name_shorthand}"
+        summary: "[Q0]{query['[0].summary']}"
         customfield_19673:
           value: "Q0"
           issuelinks:
@@ -82,40 +82,40 @@ Structure:
                 inwardIssue: "{issueRef[issueEpic]}"
         items:
           - type: Task
-            summary: "[Q0][{quest_type}_{quest_name_shorthand}] Narrative Spec"
+            summary: "[Q0][{query['[0].summary']}] Narrative Spec"
           - type: Task
             refId: artTasks
-            summary: "[Q0][{quest_type}_{quest_name_shorthand}] Asset List Creation"
+            summary: "[Q0][{query['[0].summary']}] Asset List Creation"
             description: "A full list of required assets for the Quest is written, including any models, animations, textures, cutscenes, audio and locations will be needed. This also includes creating tasks for such assets, and assigning them to their appropriate leads."
             components:
               - name: POD - Narrative
               - name: POD - Environment Art
       - type: Story
         refId: issue2
-        summary: "[Q1]{quest_type}_{quest_name_shorthand}"
+        summary: "[Q1]{query['[0].summary']}"
         customfield_19673:
           value: "Q1"
         items:
           - type: Task
-            summary: "[Q1][{quest_type}_{quest_name_shorthand}] Quest Blueprint (Whitebox)"
+            summary: "[Q1][{query['[0].summary']}] Quest Blueprint (Whitebox)"
             description: "Initial implementation of the gameplay tasks in Unreal, allowing the Player to move between and complete Quest tasks in order (or at least a placeholder version so as not to block progression)."
           - type: Task
-            summary: "[Q1][{quest_type}_{quest_name_shorthand}] Dialogue Scaffold (1st Pass)"
+            summary: "[Q1][{query['[0].summary']}] Dialogue Scaffold (1st Pass)"
             description: "The Quest can be independently started, followed (with at least placeholder tasks), and completed by a Player outside the Editor, without the game breaking or requiring cheats."
       - type: Story
-        summary: "[Q2]{quest_type}_{quest_name_shorthand}"
+        summary: "[Q2]{query['[0].summary']}"
         refId: issue3
         customfield_19673:
           value: "Q2"
         description: "The Quest's are reflective of their actual intended gameplay experience. All placeholders have been removed."
         items:
           - type: Task
-            summary: "[Q2][{quest_type}_{quest_name_shorthand}] Quest Blueprint"
+            summary: "[Q2][{query['[0].summary']}] Quest Blueprint"
           - type: Task
-            summary: "[Q2][{quest_type}_{quest_name_shorthand}] Dialogue (2nd Pass)"
+            summary: "[Q2][{query['[0].summary']}] Dialogue (2nd Pass)"
             description: "All dialogue options for the Player have been entered and work, and all contain Mood / Affinity / State changes as appropriate. Freeroam dialogue has been added as appropriate."
           - type: Task
-            summary: "[Q1][{quest_type}_{quest_name_shorthand}] Quest Assets (NPC / Props)"
+            summary: "[Q1][{query['[0].summary']}] Quest Assets (NPC / Props)"
             components:
               - name: POD - Narrative
               - name: POD - Environment Art
@@ -123,7 +123,7 @@ Structure:
               type: Relates
               inwardIssue: "{issueRef[artTasks]}"
           - type: Task
-            summary: "[Q2][{quest_type}_{quest_name_shorthand}] Quest Assets (VFX)"
+            summary: "[Q2][{query['[0].summary']}] Quest Assets (VFX)"
             components:
               - name: POD - Narrative
               - name: POD - Environment Art
@@ -131,7 +131,7 @@ Structure:
               type: Relates
               inwardIssue: "{issueRef[artTasks]}"
           - type: Task
-            summary: "[Q2][{quest_type}_{quest_name_shorthand}] Cut-Scene"
+            summary: "[Q2][{query['[0].summary']}] Cut-Scene"
             components:
               - name: POD - Narrative
               - name: POD - Character Art
@@ -139,21 +139,21 @@ Structure:
               type: Relates
               inwardIssue: "{issueRef[artTasks]}"
       - type: Story
-        summary: "[Q3]{quest_type}_{quest_name_shorthand}"
+        summary: "[Q3]{query['[0].summary']}"
         refId: issue4
         customfield_19673:
           value: "Q3"
         items:
           - type: Task
-            summary: "[Q3][{quest_type}_{quest_name_shorthand}] Dialogue (Final Pass)"
+            summary: "[Q3][{query['[0].summary']}] Dialogue (Final Pass)"
             description: "All tasks are tweaked to the point they're not just playable, but also engaging gameplay. They are difficult enough, etc."
           - type: Task
-            summary: "[Q3][{quest_type}_{quest_name_shorthand}] VO"
+            summary: "[Q3][{query['[0].summary']}] VO"
             components:
               - name: POD - Narrative
               - name: Audio
   - type: TestPlan
-    summary: "[Test Plan]{quest_type}_{quest_name_shorthand}"
+    summary: "[Test Plan] {query['[0].summary']}"
     issuelinks:
       type: Relates
       inwardIssue: "{issueRef[issueEpic]}"

@@ -5,7 +5,7 @@ This tool is designed to streamline the process of creating Jira issues by provi
 ## Features
 
 - **Template-Based Issue Creation**: Define issue templates in YAML format, specifying the types of Issues through their fields and mappings in Jira.
-
+- **Dynamic Placeholders**: Use JMESPath queries to dynamically populate field values from structured data.
 ## Installation
 
 1. Ensure you have Node.js installed on your machine.
@@ -148,6 +148,7 @@ In this example:
 To prevent conflicts and ensure proper functionality, certain `keys` are reserved within the placeholder system. Reserved keys are predefined placeholders that serve specific purposes and should not be overridden or modified. These keys include:
 - `parentKey`: Represents the key of the parent issue. Used to establish hierarchical relationships between issues within the template structure.
 - `issueRef`: Allows referencing other issues within the template by their reference IDs. This enables linking related issues or retrieving information from previously created issues during the issue creation process.
+- `query`: Allows specific JMESPath Queries
 
 ##### Steps
 
@@ -161,6 +162,14 @@ The step property in the item configuration can have one of the following values
 - 'skip': Skips the creation of the issue entirely.
 - 'existing': Links the issue to an existing Jira ticket based on user input.
 - 'ignore': Proceeds with the normal creation of the issue.
+
+##### Queries
+You can do queries using JMESPath to allow for powerful data extraction and transformation within your templates at runtime. 
+
+- `{query['[0].summary']}`: Selects the summary of the first quest.
+- `{query['[1].summary']}`: Selects the name of the second quest.
+
+Learn more about JMES
 
 ## Usage
 

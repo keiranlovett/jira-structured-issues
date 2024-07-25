@@ -22,29 +22,37 @@ async function captureLogin() {
     return await prompts(questions);
 }
 
-async function promptForDropdown(field, options) {
-    const response = await prompts({
-        type: 'select',
-        name: 'value',
-        message: `Please select a value for ${field}:`,
-        choices: options.map(option => ({ title: option, value: option }))
-    });
-    return response.value;
-}
-
 // Function to prompt for unique values
 async function promptForUniqueValues(uniquePlaceholders) {
     const placeholderValues = {};
 
+    const dropdownRegex = /^(\w+):\s*([^,]+(?:,\s*[^,]+)*)$/;
+
     for (const placeholder of uniquePlaceholders) {
-        const placeholderDisplayName = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
-        const response = await prompts({
-            type: 'text',
-            name: 'value',
-            message: `Enter value for placeholder: ${placeholderDisplayName}:`,
-            validate: value => value ? true : `Value for '${placeholderDisplayName}' is required`
-        });
-        placeholderValues[placeholder] = response.value;
+        const match = placeholder.match(dropdownRegex);
+
+        if (match) {
+            const [fullMatch, field, options] = match;
+            
+            const placeholderDisplayName = field.charAt(0).toUpperCase() + field.slice(1);
+            const optionsArray = options.split(',').map(opt => opt.trim());
+            const response = await prompts({
+                type: 'select',
+                name: 'value',
+                message: `Please select a value for ${placeholderDisplayName}:`,
+                choices: optionsArray.map(option => ({ title: option, value: option }))
+            });
+            placeholderValues[placeholder] = response.value;
+        } else {
+            const placeholderDisplayName = placeholder.charAt(0).toUpperCase() + placeholder.slice(1);
+            const response = await prompts({
+                type: 'text',
+                name: 'value',
+                message: `Enter value for placeholder: ${placeholderDisplayName}:`,
+                validate: value => value ? true : `Value for '${placeholderDisplayName}' is required`
+            });
+            placeholderValues[placeholder] = response.value;
+        }
     }
 
     return placeholderValues;
@@ -92,4 +100,4 @@ async function displayFileList(templates) {
     return response.file;
 }
 
-module.exports = { captureLogin, promptForUniqueValues, displayFileList, promptExistingKey, promptForSkipChoice, promptForDropdown };
+module.exports = { captureLogin, promptForUniqueValues, displayFileList, promptExistingKey, promptForSkipChoice };

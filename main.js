@@ -3,8 +3,8 @@ const readline = require('readline');
 
 // Custom modules
 const { loginToJira, validateJiraSession, loadSessionCookie, getJiraUserInfo, retrieveChildren, getIssueDetails } = require('./jiraApi');
-const { displayFileList, captureLogin, promptForUniqueValues, promptForDropdown } = require('./uiPrompts');
-const { processIssuesRecursive, extractUniquePlaceholders } = require('./issueProcessor');
+const { displayFileList, captureLogin, promptForUniqueValues } = require('./uiPrompts');
+const { processIssuesRecursive, extractUniquePlaceholders, replaceJmesPathPlaceholders } = require('./issueProcessor');
 const { GetTemplates } = require('./templates');
 const config = require('./config');
 
@@ -91,13 +91,16 @@ async function displayAndProcessTemplates(sessionCookie) {
 
     // Initialize issueKeysByRefId within the function
     const issueKeysByRefId = new Map();
-
+    
     // Prompt the user for unique values
     const uniquePlaceholders = extractUniquePlaceholders(mappings, structure);
     const uniqueValues = await promptForUniqueValues(uniquePlaceholders);
 
+
+    const structureProcessed = replaceJmesPathPlaceholders(structure, structure);
+
     // Process issues based on the selected template, passing issueKeysByRefId
-    await processIssuesRecursive(mappings, structure, sessionCookie, issueKeysByRefId, uniqueValues);
+    await processIssuesRecursive(mappings, structureProcessed, sessionCookie, issueKeysByRefId, uniqueValues);
     console.log('Issues created successfully');
 }
 
