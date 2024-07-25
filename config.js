@@ -1,5 +1,5 @@
 const config = {
-    DEBUG_MODE: false, // Set to true to enable debug mode
+    DEBUG_MODE: true, // Set to true to enable debug mode
     JIRA_USER: process.env.JIRA_USER,
     JIRA_PASSWD: process.env.JIRA_PASSWD,
     JIRA_PORT: "",
@@ -12,7 +12,7 @@ config.JIRA_URL = `${config.JIRA_PROTOCOL}://${config.JIRA_SERVER}${ config.JIRA
 
 config.debug = function(message) {
     if (config.DEBUG_MODE) {
-        console.log(message);
+        console.error(message);
     }
 }
 

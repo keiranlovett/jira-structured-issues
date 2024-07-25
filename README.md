@@ -149,6 +149,18 @@ To prevent conflicts and ensure proper functionality, certain `keys` are reserve
 - `parentKey`: Represents the key of the parent issue. Used to establish hierarchical relationships between issues within the template structure.
 - `issueRef`: Allows referencing other issues within the template by their reference IDs. This enables linking related issues or retrieving information from previously created issues during the issue creation process.
 
+##### Steps
+
+The handling of steps allows users to decide additional optional actions during the creation process. 
+When running the script, it will process each item according to the specified step value, allowing for flexible handling of issue creation in Jira.
+
+**Step Options**
+The step property in the item configuration can have one of the following values:
+
+- 'prompt': Prompts the user to decide whether to skip the issue, link to an existing Jira ticket, or proceed with the creation.
+- 'skip': Skips the creation of the issue entirely.
+- 'existing': Links the issue to an existing Jira ticket based on user input.
+- 'ignore': Proceeds with the normal creation of the issue.
 
 ## Usage
 

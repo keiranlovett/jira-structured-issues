@@ -2,6 +2,7 @@ const ProgressBar = require('progress');
 const { inspect } = require('util');
 
 const { createIssueInJira } = require('./jiraApi');
+const { promptExistingKey, promptForSkipChoice } = require('./uiPrompts');
 const config = require('./config');
 
 // Define reserved keys and create a Map for issue references
@@ -154,6 +155,7 @@ function processUpdate(mappingTemplate, item, uniqueValues) {
 
 // Function to process issueData for a single item
 function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId) {
+
     const issueData = {
         fields: processFields(mappingTemplate, item, uniqueValues),
         update: processUpdate(mappingTemplate, item, uniqueValues)
@@ -166,26 +168,26 @@ function processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueK
     }
 
 
-// Merge the complex description value into the fields object at the specified path
-// Only needed for v3 API
-/*issueData.fields = mergeValueIntoObject(issueData.fields, 'description', {
-    "type": "doc",
-    "version": 1,
-    "content": [
-        {
-            "type": "paragraph",
-            "content": [
-                {
-                    "type": "text",
-                    "text": issueData.fields.description
-                }
-            ]
-        }
-    ]
-});*/
+    // Merge the complex description value into the fields object at the specified path
+    // Only needed for v3 API
+    /*issueData.fields = mergeValueIntoObject(issueData.fields, 'description', {
+        "type": "doc",
+        "version": 1,
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": issueData.fields.description
+                    }
+                ]
+            }
+        ]
+    });*/
 
-// Debug log to verify the updated fields object
-console.log("Processed fields:", JSON.stringify(issueData, null, 4));
+    // Debug log to verify the updated fields object
+    console.log("Processed fields:", JSON.stringify(issueData, null, 4));
 
     // Replace placeholders related to issue references
     issueData.fields = replaceIssueRefPlaceholder(issueData.fields, issueKeysByRefId);
@@ -215,17 +217,26 @@ function processIssueLinks(item, issueKeysByRefId) {
 async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysByRefId, uniqueValues = {}, parentKey = null) {
 
     // Initialize the progress bar
-    //console.log(`Creating '${item.type}'`);
     const bar = new ProgressBar(':bar :current/:total', { total: items.length });
-
+   
     for (const item of items) {
+
+        console.log(`Creating '${item.type}'`);
+
+        const shouldPrompt = item.hasOwnProperty('step');
+        console.log(`Require Additional Information: '${shouldPrompt}'`);
+
+        let tempKey = null;
+
         const mappingTemplate = mappings[item.type];
         if (!mappingTemplate) {
             console.error(`Error processing issues: Mapping template for type '${item.type}' not found`);
             continue;
         }
 
-        const issueData = processIssueData(mappingTemplate, item, uniqueValues, parentKey, issueKeysByRefId);
+        const updatedTemplate = await processTemplate(mappingTemplate);
+
+        const issueData = processIssueData(updatedTemplate, item, uniqueValues, parentKey, issueKeysByRefId);
         const issueLinks = processIssueLinks(item, issueKeysByRefId);
         
         if (!Array.isArray(issueData.update.issuelinks)) {
@@ -234,20 +245,53 @@ async function processIssuesRecursive(mappings, items, sessionCookie, issueKeysB
         
         issueData.update.issuelinks.push(...issueLinks);
 
-        const inspectedString = inspect(issueData, { depth: null, colors: true });
+        let inspectedString = inspect(issueData, { depth: null, colors: true });
         config.debug("Processed issue data:", inspectedString);
 
-        const issue = await createIssueInJira(issueData, sessionCookie);
+        // Skip Epic creation if user desires, to reduce complexity we still process the issue, but don't create in Jira
+        if (shouldPrompt) {
+            let step = item.step
+
+            if (step === 'prompt') {
+                step = await promptForSkipChoice();
+            }
+        
+            switch (step) {
+                case 'skip':
+                    // Skip the current item (do nothing)
+                    console.log(`Skipping ${item.type} creation for: ${item.summary}`);
+                    break;
+                case 'existing':
+                    // Handle linking to an existing Jira ticket
+                    console.log(`User chose to link to an existing Jira Ticket for: ${item.summary}`);
+                    tempKey = await promptExistingKey();
+                    break;
+                case 'ignore':
+                    // Handle as normal
+                    const issueIgnore = await createIssueInJira(issueData, sessionCookie);
+                    tempKey = issueIgnore.key;
+                    break;
+                default:
+                    // Handle as normal if no step or an unknown step is provided
+                    const issueDefault = await createIssueInJira(issueData, sessionCookie);
+                    tempKey = issueDefault.key;
+                    break;
+            }
+
+        } else {
+            const issue = await createIssueInJira(issueData, sessionCookie);
+            tempKey = issue.key;
+        }
+
+        if (item.refId) {
+            issueKeysByRefId.set(item.refId, tempKey);
+        }
 
         bar.tick(); // Update the progress bar after each successful request
 
-        if (item.refId) {
-            issueKeysByRefId.set(item.refId, issue.key);
-        }
-
         if (item.items && item.items.length > 0) {
-            const newUniqueValues = { ...uniqueValues, parentKey: issue.key };
-            await processIssuesRecursive(mappings, item.items, sessionCookie, issueKeysByRefId, newUniqueValues, issue.key);
+            const newUniqueValues = { ...uniqueValues, parentKey: tempKey };
+            await processIssuesRecursive(mappings, item.items, sessionCookie, issueKeysByRefId, newUniqueValues, tempKey);
         }
     }
 }

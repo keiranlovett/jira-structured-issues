@@ -22,6 +22,16 @@ async function captureLogin() {
     return await prompts(questions);
 }
 
+async function promptForDropdown(field, options) {
+    const response = await prompts({
+        type: 'select',
+        name: 'value',
+        message: `Please select a value for ${field}:`,
+        choices: options.map(option => ({ title: option, value: option }))
+    });
+    return response.value;
+}
+
 // Function to prompt for unique values
 async function promptForUniqueValues(uniquePlaceholders) {
     const placeholderValues = {};
@@ -38,6 +48,31 @@ async function promptForUniqueValues(uniquePlaceholders) {
     }
 
     return placeholderValues;
+}
+
+async function promptForSkipChoice() {
+    const response = await prompts({
+        type: 'select',
+        name: 'epicChoice',
+        message: 'A "step" for this item exists in the configuration.',
+        choices: [
+            { title: 'Continue', value: 'ignore' },
+            { title: 'Skip this Item', value: 'skip' },
+            { title: 'Replace with existing Jira Ticket', value: 'existing' }
+        ]
+    });
+
+    return response.epicChoice;
+}
+
+async function promptExistingKey() {
+    const response = await prompts({
+        type: 'text',
+        name: 'epicKey',
+        message: 'Please enter the existing Jira ticket key:'
+    });
+
+    return response.epicKey;
 }
 
 // Function to display the file list and prompt for a selection
@@ -57,4 +92,4 @@ async function displayFileList(templates) {
     return response.file;
 }
 
-module.exports = { captureLogin, promptForUniqueValues, displayFileList };
+module.exports = { captureLogin, promptForUniqueValues, displayFileList, promptExistingKey, promptForSkipChoice, promptForDropdown };

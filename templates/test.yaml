@@ -1,0 +1,22 @@
+# Template for basic Quest. This does not include the additional tasks of a Main Quest
+---
+Prompt: "Please enter the name of the Quest only."
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Epic
+      summary: "{quest_type}"
+      customfield_10672: "{quest_type}"
+      description: ""
+      reporter:
+        name: "keiran.lovett@gameloft.com"
+      components:
+        - name: Audio
+Structure:
+  - type: Epic
+    summary: "{quest_type}"
+    description: "Hello World"
+    

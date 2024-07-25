@@ -7,10 +7,10 @@ Mappings:
         key: STN
       issuetype:
         name: Epic
-      summary: "{feature}"
-      customfield_10672: "{feature}"
+      summary: "Location - {location} {variation}"
+      customfield_10672: "Location - {location} {variation}"
       reporter:
-        name: "{reporter}"
+        name: "nancy.paulin@gameloft.com"
       components:
         - name: POD - Environment Art
   Story:
@@ -21,7 +21,7 @@ Mappings:
         name: Story
       summary: ""
       reporter:
-        name: "{reporter}"
+        name: "nancy.paulin@gameloft.com"
       components:
         - name: POD - Environment Art
       customfield_10671: "{parentKey}"
@@ -43,7 +43,7 @@ Mappings:
       summary: ""
       customfield_19581: "{parentKey}"
       reporter:
-        name: "{reporter}"
+        name: "nancy.paulin@gameloft.com"
       components:
         - name: POD - Environment Art
     update:
@@ -57,48 +57,39 @@ Mappings:
               key: "{parentKey}"
 Structure:
   - type: Epic
-    summary: "{feature}"
+    summary: "Location - {location} {variation} "
     items:
       - type: Story
-        summary: "[Q0][{feature}]"
+        summary: "[Q0][Location - {location} {variation}]"
         customfield_19673:
           value: "Q0"
         items:
           - type: Task
-            summary: "[Q0][{feature}] Research"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
+            summary: "[Q0][Location - {location} {variation}] Research"
           - type: Task
-            summary: "[Q0][{feature}] Concept Art"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
+            summary: "[Q0][Location - {location} {variation}] Concept Art"
           - type: Task
-            summary: "[Q0][{feature}] Props List"
-            components:
-              - name: POD - Narrative
-              - name: POD - Environment Art
+            summary: "[Q0][Location - {location} {variation}] Props List"
+          - type: Task
+            summary: "[Q0][Location - {location} {variation}] Confluence Documentation"
       - type: Story
-        summary: "[Q1][{feature}]"
+        summary: "[Q1][Location - {location} {variation}]"
         customfield_19673:
           value: "Q1"
         items:
           - type: Task
-            summary: "[Q1][{feature}] Whitebox"
+            summary: "[Q1][Location - {location} {variation}] Model (Whitebox)"
       - type: Story
-        summary: "[Q2][{feature}]"
+        summary: "[Q2][Location - {location} {variation}]"
         customfield_19673:
           value: "Q2"
         items:
           - type: Task
-            summary: "[Q2][{feature}] Structure"
+            summary: "[Q2][Location - {location} {variation}] Props"
           - type: Task
-            summary: "[Q2][{feature}] Props"
+            summary: "[Q2][Location - {location} {variation}] Model (Art Pass)"
           - type: Task
-            summary: "[Q2][{feature}] Level Art"
+            summary: "[Q2][Location - {location} {variation}] VFX"
           - type: Task
-            summary: "[Q2][{feature}] VFX"
-          - type: Task
-            summary: "[Q2][{feature}] Lighting"
+            summary: "[Q2][Location - {location} {variation}] Lighting"
     

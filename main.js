@@ -3,7 +3,7 @@ const readline = require('readline');
 
 // Custom modules
 const { loginToJira, validateJiraSession, loadSessionCookie, getJiraUserInfo, retrieveChildren, getIssueDetails } = require('./jiraApi');
-const { displayFileList, captureLogin, promptForUniqueValues } = require('./uiPrompts');
+const { displayFileList, captureLogin, promptForUniqueValues, promptForDropdown } = require('./uiPrompts');
 const { processIssuesRecursive, extractUniquePlaceholders } = require('./issueProcessor');
 const { GetTemplates } = require('./templates');
 const config = require('./config');
@@ -43,6 +43,30 @@ async function obtainValidSession() {
 
     throw new Error('Failed to log in after multiple attempts.');
 }
+
+
+// Function to process the template and replace dropdown placeholders
+async function processTemplate(template) {
+    for (const item of template.Structure) {
+        // Parse dropdown options
+        const dropdownRegex = /{(\w+):(.+?)}/g;
+        const matches = [...item.summary.matchAll(dropdownRegex)];
+
+        for (const match of matches) {
+            const [fullMatch, field, options] = match;
+            const optionsArray = options.split(',').map(opt => opt.trim());
+            const selectedValue = await promptForDropdown(field, optionsArray);
+            item.summary = item.summary.replace(fullMatch, selectedValue);
+        }
+
+        // Process nested items
+        if (item.items && item.items.length > 0) {
+            item.items = await processTemplate({ Structure: item.items });
+        }
+    }
+    return template;
+}
+
 
 async function displayAndProcessTemplates(sessionCookie) {
     const templates = GetTemplates();
