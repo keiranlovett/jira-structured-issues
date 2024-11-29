@@ -1,0 +1,113 @@
+---
+Prompt: "Please enter the Encounter Name."
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Epic
+      summary: "Encounter - {name}"
+      customfield_10672: "Encounter - {name}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Upside Down
+  Story:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Story
+      summary: ""
+      reporter:
+        name: "{reporter}"
+      customfield_19673:
+          value: "L0"
+      components:
+        - name: POD - Upside Down
+      customfield_10671: "{parentKey}"
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+              outward: is child of
+            inwardIssue:
+              key: "{parentKey}"
+  Task:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Task
+      summary: ""
+      customfield_19581: "{parentKey}"
+      customfield_19673:
+          value: "L0"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Upside Down
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+              outward: is child of
+            inwardIssue:
+              key: "{parentKey}"
+Structure:
+  - type: Epic
+    refId: issueEpic
+    step: "prompt"
+    summary: "Encounter - {name}"
+    items:
+      - type: Story
+        summary: "[L0] Encounter - {name}"
+        customfield_19673:
+          value: "L0"
+        items:
+          - type: Task
+            refId: spec
+            summary: "[L0][{query['[0].summary']}] Boss Mechanics / Encounter Spec"
+            customfield_19673:
+              value: "L0"
+          - type: Task
+            refId: paper
+            summary: "[L0][{query['[0].summary']}] Paper Design"
+            customfield_19673:
+              value: "L0"
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[spec]}"
+          - type: Task
+            refId: prototype
+            summary: "[L0][{query['[0].summary']}] Whitebox Prototype"
+            customfield_19673:
+              value: "L0"
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[paper]}"
+      - type: Story
+        summary: "[L1] Encounter - {name}"
+        customfield_19673:
+          value: "L1"
+        items:
+          - type: Task
+            refId: implementation
+            summary: "[L1][{query['[0].summary']}] Whitebox Finalisation + 1st Art Pass"
+            customfield_19673:
+              value: "L1"
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[prototype]}"
+          - type: Task
+            summary: "[L1][{query['[0].summary']}] 2nd Art Pass"
+            customfield_19673:
+              value: "L1"
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[prototype]}"

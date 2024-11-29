@@ -1,0 +1,182 @@
+# Template for basic Quest. This does not include the additional tasks of a Main Quest
+---
+Prompt: "Please enter the name of the Quest only."
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Epic
+      summary: "{quest_type:AQ, MQ, SQ}_{shorthand_name}_{unique_identifier}"
+      description: ""
+      customfield_10672: "{quest_type:AQ, MQ, SQ}_{shorthand_name}_{unique_identifier}"
+      customfield_20570: "{rank:Gold, Silver, Bronze}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+  Story:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Story
+      summary: ""
+      description: ""
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+      customfield_10671: "{issueRef[issueEpic]}"
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{parentKey}"
+  Task:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Task
+      summary: ""
+      description: ""
+      customfield_19581: "{parentKey}"
+      customfield_10671: "{issueRef[issueEpic]}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{issueRef[issueEpic]}"
+  TestPlan:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Test Plan
+      summary: ""
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+Structure:
+  - type: Epic
+    refId: issueEpic
+    step: "prompt"
+    summary: "{quest_type:AQ, MQ, SQ}_{shorthand_name}_{unique_identifier}"
+    description: ""
+    customfield_20570: 
+      value: "{rank:Gold, Silver, Bronze}"
+    items:
+      - type: Story
+        refId: issue1
+        summary: "[L0]{query['[0].summary']}"
+        description: "Definition of Done: Provide a link to the appropriate confluence page in the description with the Gameplay Table and Realisation Assets List."
+        customfield_19673:
+          value: "L0"
+          issuelinks:
+            - type:
+                name: Relates
+                inwardIssue: "{issueRef[issueEpic]}"
+        items:
+          - type: Task
+            summary: "[L0][{query['[0].summary']}] Design Spec - Gameplay"
+            description: "Definition of Done: The Quest Confluence page includes a Gameplay Table with the various gameplay ingredients and narrative beats outlined. Leads have verified the content to ensure it aligns with the G/S/B expectations."
+            customfield_19673:
+              value: "L0"
+          - type: Task
+            refId: artTasks
+            summary: "[L0][{query['[0].summary']}] Design Spec - Asset List"
+            description: "Definition of Done: A full list of required assets for the Quest is defined in the Quest Confluence page (and Jira), including any models, animations, textures, (camera sequences), audio (barks, v.o., foley). Upon review of this task additional taks for creating such assets are made and assigned to their appropriate leads."
+            customfield_19673:
+              value: "L0"      
+      - type: Story
+        refId: issue2
+        summary: "[L1]{query['[0].summary']}"
+        description: "Definition of Done: The Quest can be independently started, followed (with at least placeholder tasks), and completed by a Player outside the Editor, without the game breaking or requiring cheats."
+        customfield_19673:
+          value: "L1"
+        items:
+          - type: Task
+            summary: "[L1][{query['[0].summary']}] Quest Blueprint (Playable Whitebox)"
+            description: "Definition of Done: Initial implementation of the gameplay, allowing the Player to move between and complete Quest tasks in order (or at least a placeholder version so as not to block progression)."
+            customfield_19673:
+              value: "L1"
+          - type: Task
+            summary: "[L1][{query['[0].summary']}] Dialogue (1st Pass)"
+            description: "Definition of Done: Functional dialogue is in place, allowing basic completition of the quest. All dialogue options for the Player have been entered and work."
+            customfield_19673:
+              value: "L1"          
+          - type: Task
+            summary: "[L1][{query['[0].summary']}] Realisation Assets List (Audio, Art, UI)"
+            description: "Definition of Done: A list of assets needed has been handed off to the appropriate teams. Leads will need to verify this fits into their capacity. Assignee is responsible for their awareness."
+            customfield_19673:
+              value: "L1"
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[artTasks]}"
+          - type: Task
+            summary: "[L1][{query['[0].summary']}] Quest Cutscene Storyboard"
+            description: "Definition of Done: A storybaord has been created and reviewed by Leads. Depending on the quest type this can be optionally marked as obsolete. (Bronze level content will not have cutscenes). To be completed in collaboration with TEAM - Concept Art (as attached in Components)."
+            customfield_19673:
+              value: "L1"
+            components:
+              - name: POD - Hawkins + Quests
+              - name: TEAM - Concept
+      - type: Story
+        summary: "[L2]{query['[0].summary']}"
+        description: "Definition of Done: The Quest's are reflective of their actual intended gameplay experience. All placeholders have been removed."
+        refId: issue3
+        customfield_19673:
+          value: "L2"
+        items:
+          - type: Task
+            summary: "[L2][{query['[0].summary']}] Feature Complete Whitebox"
+            description: "Definition of Done: Quest is playable via all paths, with no walkthrough breaks. This includes the integration of cutscenes should they exist for this Quest (placeholders are acceptable for this DoD). Whitebox is in a level instance."
+            customfield_19673:
+              value: "L2"
+          - type: Task
+            summary: "[L2][{query['[0].summary']}] Dialogue (2nd Pass)"
+            description: "Definition of Done: Dialogue has recieved a character / tone pass. Any V.O. has been integrated (in collaboration with TEAM - Audio)."
+            customfield_19673:
+              value: "L2"
+            components:
+              - name: TEAM - Audio
+          - type: Task
+            summary: "[L2][{query['[0].summary']}] Art Assets Implementation (Cinematics inc)"
+            description: "Definition of Done: All assets required have at least an initial pass and are in the quest as intended."
+            customfield_19673:
+              value: "L2"
+            components:
+              - name: POD - Hawkins + Quests
+              - name: TEAM - Environment + VFX
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[artTasks]}"
+          - type: Task
+            summary: "[L2][{query['[0].summary']}] Audio Assets Implementation (Cinematics, V.O, Barks, Dialogue)"
+            description: "Definition of Done: All assets required have at least an initial pass and are in the quest as intended."
+            customfield_19673:
+              value: "L2"
+            components:
+              - name: POD - Hawkins + Quests
+              - name: TEAM - Audio
+            issuelinks:
+              type: Relates
+              inwardIssue: "{issueRef[artTasks]}"
+  - type: TestPlan
+    summary: "[Test Plan] {query['[0].summary']}"
+    issuelinks:
+      type: Relates
+      inwardIssue: "{issueRef[issueEpic]}"

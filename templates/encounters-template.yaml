@@ -1,0 +1,73 @@
+# Template for Location Quest.
+---
+Prompt: "Please enter the name of the District only."
+Mappings:
+  Epic:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Epic
+      summary: ""
+      customfield_10672: "Encounters - {district_name}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+  Task:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Task
+      summary: ""
+      customfield_10671: "{parentKey}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+      description: "Needs a description."
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{issueRef[issueEpic]}"
+  TestPlan:
+    fields:
+      project:
+        key: STN
+      issuetype:
+        name: Test Plan
+      summary: ""
+      customfield_10671: "{parentKey}"
+      reporter:
+        name: "{reporter}"
+      components:
+        - name: POD - Hawkins + Quests
+    update:
+      issuelinks:
+        - add:
+            type:
+              name: Parent-Child
+              inward: is parent of
+            inwardIssue:
+              key: "{issueRef[issueEpic]}"
+Structure:
+  - type: Epic
+    refId: issueEpic
+    summary: "Encounters - {district_name}"
+    items:
+      - type: Task
+        summary: "[{query['[0].summary']}] Encounter 001"
+      - type: Task
+        summary: "[{query['[0].summary']}] Encounter 002"
+      - type: Task
+        summary: "[{query['[0].summary']}] Encounter 003"
+      - type: TestPlan
+        summary: "[Test Plan] {query['[0].summary']}"
+        issuelinks:
+          type: Parent-Child
+          inwardIssue: "{issueRef[issueEpic]}"

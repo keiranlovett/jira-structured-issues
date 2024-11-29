@@ -104,12 +104,26 @@ function createIssueInJira(issueData) {
                 config.debug('Issue created:', data.key);
                 resolve(data);
             } else {
-                console.error('Failed to create issue:', response.statusCode, response.statusMessage);
-                console.error('Response body:', data);
-                reject(`Failed to create issue: ${response.statusCode} ${response.statusMessage}. JSON Body: ${issueData}`);
+                const responseBody = Buffer.isBuffer(data) ? data.toString('utf8') : data;
+    
+                console.error('Error! Failed to create issue:', response.statusCode, response.statusMessage);
+                console.error('Response body:', responseBody);
+                console.error('Request Payload:', createIssueArgs);
+                console.error('Response Headers:', response.headers);
+    
+                // Attempt to parse JSON body if it's expected.
+                let parsedBody = null;
+                try {
+                    parsedBody = JSON.parse(responseBody);
+                } catch (err) {
+                    console.error('Failed to parse response body as JSON');
+                }
+    
+                reject(`Failed to create issue: ${response.statusCode} ${response.statusMessage}. JSON Body: ${JSON.stringify(parsedBody || issueData)}`);
             }
         });
     });
+    
 }
 
 
