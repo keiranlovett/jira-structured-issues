@@ -7,15 +7,9 @@ async function captureLogin() {
     const questions = [
         {
             type: 'text',
-            name: 'username',
-            message: 'Jira Username?',
-            validate: username => username ? true : 'Username is required'
-        },
-        {
-            type: 'password',
-            name: 'password',
-            message: 'Jira Password?',
-            validate: password => password ? true : 'Password is required'
+            name: 'pat',
+            message: 'Jira PAT?',
+            validate: pat => pat ? true : 'Personal Access Token is required'
         }
     ];
 

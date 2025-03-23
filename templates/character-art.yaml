@@ -11,7 +11,7 @@ Mappings:
       description: ""
       customfield_10672: "Character - {name}"
       reporter:
-        name: "john.aitchison@gameloft.com"
+        name: "nancy.paulin@gameloft.com"
       components:
         - name: TEAM - Character + Animation
   Task:
@@ -26,7 +26,7 @@ Mappings:
           value: "L0"
       customfield_10671: "{parentKey}"
       reporter:
-        name: "john.aitchison@gameloft.com"
+        name: "nancy.paulin@gameloft.com"
       components:
         - name: TEAM - Character + Animation
     update:
@@ -53,7 +53,7 @@ Structure:
         customfield_19673:
           value: "L0"
         reporter:
-          name: "duke.mighten@gameloft.com"
+          name: "nancy.paulin@gameloft.com"
       - type: Task
         refId: sculptTask
         summary: "[L1][{query['[0].summary']}] HiRez Model Sculpt"

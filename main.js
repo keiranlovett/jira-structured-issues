@@ -2,7 +2,7 @@
 const readline = require('readline');
 
 // Custom modules
-const { loginToJira, validateJiraSession, loadSessionCookie, getJiraUserInfo, retrieveChildren, getIssueDetails } = require('./jiraApi');
+const { setJiraPAT, validateJiraSession, loadStoredPAT, getJiraUserInfo, retrieveChildren, getIssueDetails, savePAT } = require('./jiraApi');
 const { displayFileList, captureLogin, promptForUniqueValues } = require('./uiPrompts');
 const { processIssuesRecursive, extractUniquePlaceholders, replaceJmesPathPlaceholders } = require('./issueProcessor');
 const { GetTemplates } = require('./templates');
@@ -21,26 +21,25 @@ function setupEscListener() {
 }
 
 async function obtainValidSession() {
-    let sessionCookie = loadSessionCookie();
-
-    if (sessionCookie && await validateJiraSession(sessionCookie)) {
-        return sessionCookie;
+    let retrievedPat = loadStoredPAT();
+    
+    if (retrievedPat) {
+        return retrievedPat;
     }
 
     let attempts = 3;
     while (attempts > 0) {
-        const { username, password } = await captureLogin();
-
+        const { pat } = await captureLogin();
         try {
-            sessionCookie = await loginToJira(username, password);
-            return sessionCookie;
+            await validateJiraSession(pat);
+            savePAT(pat);
+            return pat;
         } catch (error) {
             console.error(error.message);
             attempts -= 1;
             console.log(`Attempts remaining: ${attempts}`);
         }
     }
-
     throw new Error('Failed to log in after multiple attempts.');
 }
 
@@ -115,6 +114,8 @@ async function main() {
 
     try {
         const sessionCookie = await obtainValidSession();
+        console.log("token" + sessionCookie);
+        setJiraPAT(sessionCookie);
 
         // Get and display Jira user information
         try {

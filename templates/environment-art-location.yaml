@@ -12,15 +12,6 @@ Mappings:
         name: "nancy.paulin@gameloft.com"
       components:
         - name: TEAM - Environment + VFX
-    update:
-      issuelinks:
-        - add:
-            type:
-              name: Parent-Child
-              inward: is parent of
-              outward: is child of
-            inwardIssue:
-              key: "{parentKey}"
   Task:
     fields:
       project:
@@ -59,3 +50,5 @@ Structure:
         summary: "[L1][{query['[0].summary']}] VFX"
       - type: Task
         summary: "[L1][{query['[0].summary']}] Lighting"
+      - type: Task
+        summary: "[L1][{query['[0].summary']}] Collision Pass"
