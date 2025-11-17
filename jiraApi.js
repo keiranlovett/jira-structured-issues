@@ -5,14 +5,6 @@ const { Console } = require('console');
 
 const client = new Client();
 
-// Function to configure the Authorization header with a PAT
-function setJiraPAT(pat) {
-    if (!pat) {
-        throw new Error('PAT is required to authenticate with Jira.');
-    }
-    // Store the PAT for use in subsequent API requests
-    global.pat = pat;
-}
 
 // Function to create the Authorization header
 function getAuthHeaders(optionalPAT = null) {
@@ -61,6 +53,15 @@ function getJiraUserInfo() {
     });
 }
 
+// Function to configure the Authorization header with a PAT
+function setJiraPAT(pat) {
+    if (!pat) {
+        throw new Error('PAT is required to authenticate with Jira.');
+    }
+    // Store the PAT for use in subsequent API requests
+    global.pat = pat;
+}
+
 // Function to save session cookie to file
 function savePAT(pat) {
     const patPath = 'session-pat.json';
@@ -68,7 +69,7 @@ function savePAT(pat) {
 }
 
 // Function to load session cookie from file
-function loadStoredPAT() {
+function loadPAT() {
     const patPath = 'session-pat.json';
     if (fs.existsSync(patPath)) {
         const patData = fs.readFileSync(patPath, 'utf8');
@@ -221,7 +222,7 @@ module.exports = {
     createIssueInJira,
     setJiraPAT,
     savePAT, 
-    loadStoredPAT,
+    loadStoredPAT: loadPAT,
     getIssueDetails,
     retrieveChildren
 };

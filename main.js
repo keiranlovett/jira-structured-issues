@@ -110,11 +110,11 @@ async function displayAndProcessTemplates(sessionCookie) {
 async function main() {
     setupEscListener();  // Set up the ESC key listener
 
-    console.log('Welcome! Connecting to: ' + config.JIRA_URL);
+    console.log('Connecting to: ' + config.JIRA_URL);
 
     try {
         const sessionCookie = await obtainValidSession();
-        console.log("token" + sessionCookie);
+        console.log("Token: " + sessionCookie);
         setJiraPAT(sessionCookie);
 
         // Get and display Jira user information
